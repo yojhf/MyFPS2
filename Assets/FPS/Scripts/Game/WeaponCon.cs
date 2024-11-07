@@ -6,6 +6,20 @@ using System;
 // 무기을 관리하는 클래스
 namespace Unity.FPS.Game
 {
+    public enum WeaponAimType
+    {
+        Nomal,
+        Snipe
+    }
+
+    // 무기 발사
+    public enum WeaponShootType
+    {
+        Manual,
+        Automatic,
+        Charge
+    }
+
     // 크로스헤어 관리하는 클래스
     [Serializable]
     public class CrossHairData
@@ -17,6 +31,11 @@ namespace Unity.FPS.Game
 
     public class WeaponCon : MonoBehaviour
     {
+        // AimingType
+        public WeaponAimType aimType;
+        // Shooting
+        public WeaponShootType shootType;
+
         // 무기 활성화, 비활성화
         private GameObject weaponRoot;
 
@@ -40,6 +59,33 @@ namespace Unity.FPS.Game
         // 조준 시 무기 위치 값
         public Vector3 aimOffset;
 
+        // 장전할 수 있는 최대 총알갯수
+        public float maxBullet = 8f;
+        private float currentBullet;
+        // 발사 간격
+        public float bulletChargeDelay = 0.5f;
+        // 마지막 발사 시간
+        private float lastTimeShoot;
+
+        // Vfx, Sfx
+        // 총구 위치
+        public Transform weaponMuzzle;
+        // 총구 발사 효과
+        public GameObject muzzleFlashPrefab;
+        public AudioClip shootSfx;
+
+        // 반동
+        public float recoilForce = 0.5f;
+
+        // Projectile
+        public ProjectileBase projectilePrefab;
+
+        public Vector3 MuzzleWorldVelocity { get; private set; }
+        private Vector3 lastMuzzlePos;
+        public float CurrentCharge { get; private set; }
+
+
+
         private void Awake()
         {
             Init();
@@ -61,6 +107,8 @@ namespace Unity.FPS.Game
         {
             weaponRoot = transform.GetChild(0).gameObject;
             shootAudioSource = GetComponent<AudioSource>();
+            currentBullet = maxBullet;
+            lastTimeShoot = Time.time;
         }
 
         public void ShowWeapon(bool show)
@@ -75,6 +123,69 @@ namespace Unity.FPS.Game
             }
 
             IsWeaponActive = show;
+        }
+
+        // 키 입력에 따른 Shoot 구현
+        public bool HandleShootInputs(bool intputDown, bool inputHeld, bool inputUp)
+        {
+            switch(shootType)
+            {
+                case WeaponShootType.Manual:
+                    if(intputDown == true)
+                    {
+                        return TryShoot();
+                    }
+                    break;
+                case WeaponShootType.Automatic:
+                    if (inputHeld == true)
+                    {
+                        return TryShoot();                       
+                    }
+                    break;
+                case WeaponShootType.Charge:
+                    if (inputUp == true)
+                    {
+                        return TryShoot();            
+                    }
+                    break;
+
+            }
+
+            return false;
+        }
+
+        bool TryShoot()
+        {
+            if(currentBullet >= 1f && (lastTimeShoot + bulletChargeDelay) < Time.time)
+            {
+                currentBullet -= 1f;
+                HandleShoot();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // 총 발사 연출
+        void HandleShoot()
+        {
+            // Vfx
+            if(muzzleFlashPrefab != null)
+            {
+                GameObject effectGo = Instantiate(muzzleFlashPrefab, weaponMuzzle.position, weaponMuzzle.rotation, weaponMuzzle);
+
+                Destroy(effectGo, 2f);
+            }
+
+            // Sfx
+            if(shootSfx != null)
+            {
+                shootAudioSource.PlayOneShot(shootSfx);
+            }
+
+            lastTimeShoot = Time.time;
+
         }
     }
 }

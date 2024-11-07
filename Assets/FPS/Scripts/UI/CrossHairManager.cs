@@ -16,7 +16,7 @@ namespace Unity.FPS.UI
         private CrossHairData crossHairDefault;
         private CrossHairData crossHairTarget;
         private CrossHairData crossHairCur;
-        [SerializeField] private float updateShrpness = 5f;
+        [SerializeField] private float updateSharp = 5f;
 
         private bool wasPointEnemy;
 
@@ -68,8 +68,8 @@ namespace Unity.FPS.UI
 
             //crossHair.sizeDelta = crossHairCur.crossHairSize * Vector2.one;
             crossHairImage.sprite = crossHairCur.crossHairSprit;
-            crossHairImage.color = Color.Lerp(crossHairImage.color, crossHairCur.crossHairColor, updateShrpness * Time.deltaTime);
-            crossHair.sizeDelta = Mathf.Lerp(crossHair.sizeDelta.x, crossHairCur.crossHairSize, updateShrpness * Time.deltaTime) * Vector2.one;
+            crossHairImage.color = Color.Lerp(crossHairImage.color, crossHairCur.crossHairColor, updateSharp * Time.deltaTime);
+            crossHair.sizeDelta = Mathf.Lerp(crossHair.sizeDelta.x, crossHairCur.crossHairSize, updateSharp * Time.deltaTime) * Vector2.one;
         }
 
         // 무기가 바뀔때마다 crossHairImage를 각각의 무기 CrossHair로 바꾸기
