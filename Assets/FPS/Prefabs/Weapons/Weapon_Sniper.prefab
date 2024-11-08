@@ -272,7 +272,7 @@ MonoBehaviour:
   switchWeaponSfx: {fileID: 8300000, guid: 7cc6ce9b35551754b9836090ba392030, type: 3}
   aimZoomRatio: 0.2
   aimOffset: {x: 0, y: 0.06, z: 0}
-  maxBullet: 100
+  maxBullet: 8
   bulletChargeDelay: 0.5
   weaponMuzzle: {fileID: 2711253262520633153}
   muzzleFlashPrefab: {fileID: 0}
@@ -280,6 +280,8 @@ MonoBehaviour:
   recoilForce: 0.5
   projectilePrefab: {fileID: -5876062930876656456, guid: 3c6b27d949cdda749892906e1f1d1b27,
     type: 3}
+  bulletsPershot: 1
+  bulletSpreadAnlge: 0
 --- !u!1 &7698332914981552906
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,6 +37,10 @@ namespace Unity.FPS.Gameplay
 
         // 무기 교체 - 등록된 함수 호출
         public UnityAction<WeaponCon> OnSwitchToWeapon;
+        // 무기 추가 시 등록된 함수 호출
+        public UnityAction<WeaponCon, int> OnAddedWeapon;
+        // 장착된 무기를 제거 시 등록된 함수 호출
+        public UnityAction<WeaponCon, int> OnRemoveWeapon;
 
         // 무기 교체 시 상태
         private WeaponSwitchState weaponSwitchState;
@@ -317,6 +321,8 @@ namespace Unity.FPS.Gameplay
                     weaponInstance.SourcePrefab = weaponPrefab.gameObject;
                     weaponInstance.ShowWeapon(false);
 
+                    // 무기장착
+                    OnAddedWeapon?.Invoke(weaponInstance, i);
                     weaponSlots[i] = weaponInstance;
 
                     return true;
@@ -324,6 +330,31 @@ namespace Unity.FPS.Gameplay
             }
 
             Debug.Log("Full");
+
+            return false;
+        }
+
+        // weaponSlots에 장착된 무기 제거
+        public bool RemoveWeapon(WeaponCon weaponPrefab)
+        {
+            for (int i = 0; i < weaponSlots.Length; i++)
+            {
+                if (weaponSlots[i] == weaponPrefab)
+                {
+                    weaponSlots[i] = null;
+
+                    OnRemoveWeapon?.Invoke(weaponPrefab, i);
+                    Destroy(weaponPrefab.gameObject);
+
+                    // 현재 제거한 무기가 액티브 이면 
+                    if(i == ActiveWeaponIndex)
+                    {
+                        SwitchWeapon(true);
+                    }
+
+                    return true;
+                }
+            }
 
             return false;
         }
@@ -522,7 +553,6 @@ namespace Unity.FPS.Gameplay
                     if (dist > distanceOnScope)
                     {
                         isScopeOn = false;
-                        Debug.Log(isScopeOn);
                     }
                 }
             }   

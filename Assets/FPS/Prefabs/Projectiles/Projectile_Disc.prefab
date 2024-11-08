@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 106790115311484949}
   - component: {fileID: 106790115311484954}
   - component: {fileID: 1453383290357353507}
+  - component: {fileID: 1151862528718427053}
   m_Layer: 0
   m_Name: Projectile_Disc
   m_TagString: Untagged
@@ -97,6 +98,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 735a2429fb9f5084ba70d771a2d1d54b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 106790115311484948}
+  tip: {fileID: 843682582143931206}
+  speed: 30
+  gravityDown: 10
+  impactVfxPrefab: {fileID: 4260779743739990948, guid: bbe6bdea7cd168e428a309e9eb2e728b,
+    type: 3}
+  impactVfxLifeTime: 5
+  impactSfxSound: {fileID: 0}
+--- !u!114 &1151862528718427053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 106790115311484953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7472da02759c599468d9ff5b7a484bac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  killTime: 3
 --- !u!1 &1945832826066038730
 GameObject:
   m_ObjectHideFlags: 0

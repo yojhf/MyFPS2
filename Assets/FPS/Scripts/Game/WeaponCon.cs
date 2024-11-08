@@ -62,6 +62,8 @@ namespace Unity.FPS.Game
         // 장전할 수 있는 최대 총알갯수
         public float maxBullet = 8f;
         private float currentBullet;
+        public float CurrentAmmoRatio => currentBullet / maxBullet;
+
         // 발사 간격
         public float bulletChargeDelay = 0.5f;
         // 마지막 발사 시간
@@ -79,10 +81,15 @@ namespace Unity.FPS.Game
 
         // Projectile
         public ProjectileBase projectilePrefab;
-
+        
         public Vector3 MuzzleWorldVelocity { get; private set; }
         private Vector3 lastMuzzlePos;
         public float CurrentCharge { get; private set; }
+
+        // 한번 발사 시 탄환 갯수
+        public int bulletsPershot = 1;
+        // 총알이 퍼져나가는 각도
+        public float bulletSpreadAnlge = 0f;
 
 
 
@@ -100,7 +107,7 @@ namespace Unity.FPS.Game
         // Update is called once per frame
         void Update()
         {
-
+            UpdateBullet();
         }
 
         void Init()
@@ -109,6 +116,16 @@ namespace Unity.FPS.Game
             shootAudioSource = GetComponent<AudioSource>();
             currentBullet = maxBullet;
             lastTimeShoot = Time.time;
+        }
+
+        void UpdateBullet()
+        {
+            if(Time.deltaTime > 0f)
+            {
+                MuzzleWorldVelocity = (weaponMuzzle.position - lastMuzzlePos) / Time.deltaTime;
+
+                lastMuzzlePos = weaponMuzzle.position;
+            }
         }
 
         public void ShowWeapon(bool show)
@@ -170,6 +187,17 @@ namespace Unity.FPS.Game
         // 총 발사 연출
         void HandleShoot()
         {
+            for(int i = 0; i < bulletsPershot; i++)
+            {
+                Vector3 shootdir = GetShootDirection(weaponMuzzle);
+
+                // Projectile 생성
+                ProjectileBase projectile = Instantiate(projectilePrefab, weaponMuzzle.position, Quaternion.LookRotation(shootdir));
+
+                projectile.Shoot(this);
+            }
+
+
             // Vfx
             if(muzzleFlashPrefab != null)
             {
@@ -186,6 +214,14 @@ namespace Unity.FPS.Game
 
             lastTimeShoot = Time.time;
 
+        }
+
+        // projectile 날라가는 방향
+        Vector3 GetShootDirection(Transform shootTransform)
+        {
+            float spreadAngleRatio = bulletSpreadAnlge / 180f;
+
+            return Vector3.Lerp(shootTransform.forward, UnityEngine.Random.insideUnitSphere, spreadAngleRatio);
         }
     }
 }
