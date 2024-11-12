@@ -23,7 +23,7 @@ namespace Unity.FPS.Gameplay
 
         // 충돌
         // 충돌 검사하는 구체의 반경
-        private float radius = 0.01f;
+        public float radius = 0.01f;
         private LayerMask hitTableLayers = -1;
         private List<Collider> ignoreCols = new List<Collider>();
 
@@ -34,6 +34,10 @@ namespace Unity.FPS.Gameplay
 
         // 타격음
         public AudioClip impactSfxSound;
+
+        // 
+        public float damage = 20f;
+        DamageArea damageArea;
 
 
         private void Update()
@@ -89,6 +93,7 @@ namespace Unity.FPS.Gameplay
         {
             projectileBase = GetComponent<ProjectileBase>();
             projectileBase.OnShoot += OnShoot;
+            damageArea = GetComponent<DamageArea>();
 
             Destroy(gameObject, maxLiftTime);
         }
@@ -152,6 +157,23 @@ namespace Unity.FPS.Gameplay
         // Hit 구현 : 데미지, Vfx, Sfx
         void OnHit(Vector3 point, Vector3 nomal, Collider collider)
         {
+            if (damageArea != null)
+            {
+                damageArea.InflictDamageArea(damage, point, hitTableLayers, QueryTriggerInteraction.Collide, projectileBase.Owner);
+            }
+            else
+            {
+                Damageable damageable = collider.GetComponent<Damageable>();
+
+                if (damageable != null)
+                {
+                    damageable.InflictDamage(damage, false, projectileBase.Owner);
+                }
+            }
+
+
+
+
             // Vfx
             if (impactVfxPrefab != null)
             {

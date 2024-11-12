@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2225486910712267856}
   - component: {fileID: 7583640433812654122}
   - component: {fileID: 2314830812175486850}
+  - component: {fileID: 8508602811359777323}
   m_Layer: 6
   m_Name: Weapon_Launcher
   m_TagString: Untagged
@@ -157,8 +158,8 @@ MonoBehaviour:
   switchWeaponSfx: {fileID: 8300000, guid: 21e460e327a3d13439506e66a108c548, type: 3}
   aimZoomRatio: 0.8
   aimOffset: {x: 0, y: 0, z: 0}
-  maxBullet: 8
-  bulletChargeDelay: 0.5
+  maxBullet: 4
+  bulletChargeDelay: 2
   weaponMuzzle: {fileID: 2749496858225023403}
   muzzleFlashPrefab: {fileID: 0}
   shootSfx: {fileID: 8300000, guid: d8b950dd711066e41b270ecce245b4ac, type: 3}
@@ -167,6 +168,46 @@ MonoBehaviour:
     type: 3}
   bulletsPershot: 1
   bulletSpreadAnlge: 0
+  useCharge: 1
+  rateCharge: 1
+  lastChargeTriggerTime: 0
+  reloadRate: 1
+  reloadDelay: 2
+  autoReload: 1
+--- !u!114 &8508602811359777323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2225486910712267859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79815e0fedddcf24dace4db668dae3cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chargingObject: {fileID: 2990922162098100103}
+  spiningFrame: {fileID: 2990922162098100101}
+  distOrbitParticePrefab: {fileID: 1087039822203223203, guid: b9cf7bff98404174d83a37d58c543aa5,
+    type: 3}
+  scale:
+    Min: {x: 0.01, y: 0.01, z: 0.01}
+    Max: {x: 1, y: 1, z: 1}
+  offset: {x: 0, y: 0, z: 0.764}
+  parentTransform: {fileID: 0}
+  orbitY:
+    Min: 3.1416
+    Max: 12.5664
+  radius:
+    Min: {x: 0.5, y: 0.5, z: 0.5}
+    Max: {x: 1.5, y: 1.5, z: 1.5}
+  spiningSpeed:
+    Min: 50
+    Max: 1500
+  chargeSound: {fileID: 8300000, guid: cdf6a8aed89565f4aaea3d8f0df7f552, type: 3}
+  loopChargeWeapon: {fileID: 8300000, guid: aa6f61eb56e92b345963e65fd9c79e29, type: 3}
+  useProceduralPitchOnLoop: 0
+  maxProceduralPitchValue: 2
 --- !u!1 &2990922162098100101
 GameObject:
   m_ObjectHideFlags: 0

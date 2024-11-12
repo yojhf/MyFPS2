@@ -13,6 +13,9 @@ GameObject:
   - component: {fileID: 106790115311484954}
   - component: {fileID: 1453383290357353507}
   - component: {fileID: 1151862528718427053}
+  - component: {fileID: -1808429361618966807}
+  - component: {fileID: 1643111447038043109}
+  - component: {fileID: -6508903989763549219}
   m_Layer: 0
   m_Name: Projectile_Disc
   m_TagString: Untagged
@@ -102,10 +105,12 @@ MonoBehaviour:
   tip: {fileID: 843682582143931206}
   speed: 30
   gravityDown: 10
+  radius: 0.01
   impactVfxPrefab: {fileID: 4260779743739990948, guid: bbe6bdea7cd168e428a309e9eb2e728b,
     type: 3}
   impactVfxLifeTime: 5
   impactSfxSound: {fileID: 0}
+  damage: 20
 --- !u!114 &1151862528718427053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,6 +124,92 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   killTime: 3
+--- !u!114 &-1808429361618966807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 106790115311484953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d10ffeae76963df48b7a80afe6fc8ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Damage:
+    Min: 80
+    Max: 350
+  Speed:
+    Min: 20
+    Max: 40
+  GravityDown:
+    Min: 10
+    Max: 3
+  Radius:
+    Min: 0.2
+    Max: 0.2
+--- !u!114 &1643111447038043109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 106790115311484953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 756877a940fdf0848b4266d4c6555008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chargeObject: {fileID: 106790115311484953}
+  scale:
+    Min: {x: 0.5, y: 0.5, z: 0.5}
+    Max: {x: 0.8, y: 0.8, z: 0.8}
+--- !u!114 &-6508903989763549219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 106790115311484953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6620983feb9bf09438dc8d04433c9950, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  areaEffect: 5
+  damageRatio:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.39723784
+      outSlope: -0.39723784
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.49796137
+      value: 0.8021909
+      inSlope: -0.6423953
+      outSlope: -0.6423953
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.26089376
+    - serializedVersion: 3
+      time: 1.0041199
+      value: 0.000022888184
+      inSlope: -1.584816
+      outSlope: -1.584816
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1945832826066038730
 GameObject:
   m_ObjectHideFlags: 0
