@@ -201,9 +201,9 @@ namespace Unity.FPS.Gameplay
 
                 if (Physics.Raycast(weaponCam.transform.position, weaponCam.transform.forward, out hit, 300f))
                 {
-                    //Health enemyHealth = hit.collider.GetComponent<Health>();
+                    //Damageable damageable = hit.collider.GetComponent<Damageable>();
 
-                    //if(enemyHealth != null)
+                    //if (damageable != null)
                     //{
                     //    IsPointEnemy = true;
                     //}

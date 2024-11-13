@@ -44,7 +44,7 @@ namespace Unity.FPS.Game
         void Init()
         {
             CurrentHealth = maxHealth;
-            Invincible = false;         
+            Invincible = false;
         }
 
         public void TakeDamage(float damage, GameObject damageSource)
@@ -59,6 +59,8 @@ namespace Unity.FPS.Game
             CurrentHealth -= damage;
 
             CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maxHealth);
+
+            //Debug.Log(CurrentHealth);
 
             float realDamage = beforeHealth - CurrentHealth;
 
