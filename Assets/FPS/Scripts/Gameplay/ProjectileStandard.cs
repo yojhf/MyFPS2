@@ -24,7 +24,7 @@ namespace Unity.FPS.Gameplay
         // 충돌
         // 충돌 검사하는 구체의 반경
         public float radius = 0.01f;
-        private LayerMask hitTableLayers = -1;
+        public LayerMask hitTableLayers = -1;
         private List<Collider> ignoreCols = new List<Collider>();
 
         //충돌연출

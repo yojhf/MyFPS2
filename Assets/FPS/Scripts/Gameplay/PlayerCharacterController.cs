@@ -129,7 +129,12 @@ namespace Unity.FPS.Gameplay
 
         void Awake()
         {
-            
+            ActorManager actorManager = FindObjectOfType<ActorManager>();
+
+            if (actorManager != null)
+            {
+                actorManager.SetPlayer(gameObject);
+            }
         }
 
         void Start()

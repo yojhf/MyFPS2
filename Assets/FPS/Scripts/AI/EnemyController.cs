@@ -53,6 +53,38 @@ namespace Unity.FPS.AI
         MaterialPropertyBlock bodyFlash;
         Health health;
 
+        // Detection
+        Actor actor;
+        private Collider[] selfCols;
+
+        public DetectionModule DetectionModule { get; private set; }
+
+        public GameObject knownDetectedTarget => DetectionModule.KnownDetectedTarget;
+        public bool IsSeeingTarget => DetectionModule.IsSeeingTarget;
+        public bool HadKnownTarget => DetectionModule.HadKnownTarget;
+
+        public Material eyeColorMat;
+        [ColorUsage(true, true)] public Color defaultEyeColor;
+        [ColorUsage(true, true)] public Color attackEyeColor;
+
+        // eye Material을 가지고 있는 렌더러 데이터
+        private RendererIndexData eyeRendererData;
+        private MaterialPropertyBlock eyeColorMatPro;
+
+        public UnityAction OnDetectedTarget;
+        public UnityAction OnLostTarget;
+
+        // Attack
+        private float orientSpeed = 10f;
+        public bool IsTargetInAttackRange => DetectionModule.IsTargetInAttackRange;
+        public bool swapNextWeapon = false;
+        public float delayAfterWeaponSwap = 0f;
+        private float lastTimeWeaponSwap = Mathf.NegativeInfinity;
+
+        public int currentWeaponIndex;
+        private WeaponCon currentWeapon;
+        private WeaponCon[] weapons;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -62,15 +94,23 @@ namespace Unity.FPS.AI
         // Update is called once per frame
         void Update()
         {
+            DetectionModule.HandleTargetDetection(actor, selfCols);
             UpdateDamage();
             wasDamaged = false;
         }
 
         void Init()
         {
+            var detectionModules = GetComponentsInChildren<DetectionModule>();
+
+            DetectionModule = detectionModules[0];
+            DetectionModule.OnDetectedTarget += OnDetected;
+            DetectionModule.OnLostTarget += OnLost;
+
             health = GetComponent<Health>();
             Agent = GetComponent<NavMeshAgent>();
-            bodyFlash = new MaterialPropertyBlock();
+            actor = GetComponent<Actor>();
+            selfCols = GetComponentsInChildren<Collider>();
 
             health.OnDamaged += OnDamaged;
             health.OnDie += OnDie;
@@ -81,15 +121,37 @@ namespace Unity.FPS.AI
             {
                 for (int i = 0; i < renderer.sharedMaterials.Length; i++)
                 {
+                    // body
                     if (renderer.sharedMaterials[i] == bodyMaterial)
                     {
                         bodyRenderer.Add(new RendererIndexData(renderer, i));
                     }
 
+                    // eye
+                    if (renderer.sharedMaterials[i] == eyeColorMat)
+                    {
+                        eyeRendererData = new RendererIndexData(renderer, i);
+                    }
                 }
-
-
             }
+
+            bodyFlash = new MaterialPropertyBlock();
+
+            if (eyeRendererData.renderer != null)
+            {
+                eyeColorMatPro = new MaterialPropertyBlock();
+
+                eyeColorMatPro.SetColor("_EmissionColor", defaultEyeColor);
+
+                eyeRendererData.renderer.SetPropertyBlock(eyeColorMatPro, eyeRendererData.matIndex);
+            }
+
+
+            // 무기 초기화
+            FindAndInitAllWeapon();
+
+            var weapon = GetCurrentWeapon();
+            weapon.ShowWeapon(true);
         }
 
         void OnDamaged(float damage, GameObject damageSource)
@@ -210,5 +272,105 @@ namespace Unity.FPS.AI
              
             }
         }
+
+        void OnDetected()
+        {
+            OnDetectedTarget?.Invoke();
+
+            if (eyeRendererData.renderer != null)
+            {
+                eyeColorMatPro.SetColor("_EmissionColor", attackEyeColor);
+
+                eyeRendererData.renderer.SetPropertyBlock(eyeColorMatPro, eyeRendererData.matIndex);
+            }
+        }
+
+        void OnLost()
+        {
+            OnLostTarget?.Invoke();
+
+            if (eyeRendererData.renderer != null)
+            {
+
+                eyeColorMatPro.SetColor("_EmissionColor", defaultEyeColor);
+
+                eyeRendererData.renderer.SetPropertyBlock(eyeColorMatPro, eyeRendererData.matIndex);
+            }
+        }
+
+        public void OrientToward(Vector3 lookPos)
+        {
+            Vector3 lookDirect = Vector3.ProjectOnPlane(lookPos - transform.position, Vector3.up).normalized;
+
+            if (lookDirect.sqrMagnitude != 0)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(lookDirect);
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, orientSpeed * Time.deltaTime);
+            }
+        }
+
+        // 가지고 있는 무기 찾고 초기화
+        void FindAndInitAllWeapon()
+        {
+            if (weapons == null)
+            {
+                weapons = GetComponentsInChildren<WeaponCon>();
+
+                for (int i = 0; i < weapons.Length; i++)
+                {
+                    weapons[i].Owner = gameObject;
+                }
+            }
+        }
+
+        // 지정한 인덱스에 해달하는 무기를 current로 지정
+        void SetCurrentWeapon(int index)
+        { 
+            currentWeaponIndex = index;
+            currentWeapon = weapons[currentWeaponIndex];
+
+            if (swapNextWeapon)
+            {
+                lastTimeWeaponSwap = Time.time;
+            }
+            else
+            {
+                lastTimeWeaponSwap = Mathf.NegativeInfinity;
+            }
+        }
+
+        // 현재 Active weapon 찾기
+        public WeaponCon GetCurrentWeapon()
+        {
+            FindAndInitAllWeapon();
+
+            if (currentWeapon == null)
+            {
+                SetCurrentWeapon(0);
+            }
+
+            return currentWeapon;
+        }
+
+        // 적에게 총구를 돌린다
+        public void OrientWeaponsToward(Vector3 lookPos)
+        {
+            for (int i = 0; i < weapons.Length; i++)
+            {
+                Vector3 weaponForward = (lookPos - weapons[i].transform.position).normalized;
+
+                weapons[i].transform.forward = weaponForward;
+
+
+            }
+        }
+
+        // 공격
+        public void TryAttack(Vector3 targetPos)
+        {
+
+        }
+
     }
 }
