@@ -85,6 +85,11 @@ namespace Unity.FPS.AI
         private WeaponCon currentWeapon;
         private WeaponCon[] weapons;
 
+        public UnityAction OnAttack;
+
+        // enemyManager
+        EnemyManager enemyManager;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -111,6 +116,8 @@ namespace Unity.FPS.AI
             Agent = GetComponent<NavMeshAgent>();
             actor = GetComponent<Actor>();
             selfCols = GetComponentsInChildren<Collider>();
+            enemyManager = FindObjectOfType<EnemyManager>();
+            enemyManager.RegisterEnemy(this);
 
             health.OnDamaged += OnDamaged;
             health.OnDie += OnDie;
@@ -175,6 +182,8 @@ namespace Unity.FPS.AI
         }
         void OnDie()
         {
+            enemyManager.RemoveEnemy(this);
+
             GameObject deathEffect = Instantiate(explorsionEffect, effectPos.position, Quaternion.identity);
 
             Destroy(deathEffect, 5f);
@@ -298,15 +307,15 @@ namespace Unity.FPS.AI
             }
         }
 
-        public void OrientToward(Vector3 lookPos)
+        public void OrientToward(Vector3 lookPos, Transform enemy)
         {
-            Vector3 lookDirect = Vector3.ProjectOnPlane(lookPos - transform.position, Vector3.up).normalized;
+            Vector3 lookDirect = Vector3.ProjectOnPlane(lookPos - enemy.position, Vector3.up).normalized;
 
             if (lookDirect.sqrMagnitude != 0)
             {
                 Quaternion targetRot = Quaternion.LookRotation(lookDirect);
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, orientSpeed * Time.deltaTime);
+                enemy.rotation = Quaternion.Slerp(enemy.rotation, targetRot, orientSpeed * Time.deltaTime);
             }
         }
 
@@ -366,10 +375,32 @@ namespace Unity.FPS.AI
             }
         }
 
-        // 공격
-        public void TryAttack(Vector3 targetPos)
+        // 공격 - 공격성공 / 실패
+        public bool TryAttack(Vector3 targetPos)
         {
+            if((lastTimeWeaponSwap + delayAfterWeaponSwap) >= Time.time)
+            {
+                return false;
+            }
 
+            // 무기 shoot
+            bool didFire = GetCurrentWeapon().HandleShootInputs(false, true, false);
+
+            if (didFire && OnAttack != null)
+            {
+                OnAttack?.Invoke();
+
+                // 발사 시 다음 무기로 교체
+                if (swapNextWeapon && weapons.Length > 1)
+                {
+                    int nextWeaponIndex = (currentWeaponIndex + 1) % weapons.Length;
+
+                    SetCurrentWeapon(nextWeaponIndex);
+                }
+            }
+
+
+            return true;
         }
 
     }

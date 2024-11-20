@@ -36,7 +36,7 @@ namespace Unity.FPS.UI
         {
             float curHp = health.GetRatio();
 
-            hpBar.fillAmount = Mathf.Lerp(hpBar.fillAmount, curHp, Time.deltaTime * 10);
+            hpBar.fillAmount = Mathf.Lerp(hpBar.fillAmount, curHp, Time.deltaTime * 5f);
 
             pivot.LookAt(Camera.main.transform.position);
 

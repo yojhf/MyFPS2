@@ -6,16 +6,25 @@ using UnityEngine;
 // 이동하는 Enemy의 상태 구현
 namespace Unity.FPS.AI
 {
+    public enum EnemyType
+    {
+        Move,
+        Stand
+    }
+
     // 상태
     public enum AIState
     {
         Patrol,
         Follow,
-        Attack
+        Attack,
+        Stand
     }
 
     public class EnemyState : MonoBehaviour
     {
+        public EnemyType enemyType;
+        public Transform rotObject;
         public AIState aiState { get; private set; }   
         public Animator animator;
         
@@ -39,6 +48,10 @@ namespace Unity.FPS.AI
         public ParticleSystem[] detectedVfx;
         public AudioClip detectedSound;
 
+        // attack
+        [Range(0f, 1f)]
+        public float attackSkipRatio = 0.5f;
+
 
         // Start is called before the first frame update
         void Start()
@@ -49,13 +62,9 @@ namespace Unity.FPS.AI
         // Update is called once per frame
         void Update()
         {
-            UpdateState();
-            UpdateAIStateTransition();
-            // 속도에 따른 애니메이션 사운드 효과
-            float moveSpeed = enemyController.Agent.velocity.magnitude;
-            animator.SetFloat(k_MoveSpeed, moveSpeed);
+            SelectEnemyType();
 
-            audioSource.pitch = pitchSpeed.GetValueFromRatio(moveSpeed / enemyController.Agent.speed);
+            Debug.Log(aiState);
         }
 
         void Init()
@@ -66,11 +75,53 @@ namespace Unity.FPS.AI
             enemyController.Damaged += OnDamaged;
             enemyController.OnDetectedTarget += OnDetected;
             enemyController.OnLostTarget += OnLost;
+            enemyController.OnAttack += Attacked;
 
-            audioSource.clip = moveSound;
-            audioSource.Play();
+            if (moveSound != null)
+            {
+                audioSource.clip = moveSound;
+                audioSource.Play();
+            }
 
-            aiState = AIState.Patrol;
+
+
+            if (enemyType == EnemyType.Move)
+            {
+                aiState = AIState.Patrol;
+
+            }
+            else if (enemyType == EnemyType.Stand)
+            {
+                aiState = AIState.Stand;
+
+            }
+
+            if (rotObject == null)
+            {
+                rotObject = transform;
+            }
+
+        }
+
+        void SelectEnemyType()
+        {
+            switch (enemyType)
+            {
+                case EnemyType.Move:
+                    UpdateState();
+                    UpdateAIStateTransition();
+                    // 속도에 따른 애니메이션 사운드 효과
+                    float moveSpeed = enemyController.Agent.velocity.magnitude;
+                    animator.SetFloat(k_MoveSpeed, moveSpeed);
+
+                    audioSource.pitch = pitchSpeed.GetValueFromRatio(moveSpeed / enemyController.Agent.speed);
+                    break;
+                case EnemyType.Stand:
+                    UpdateState();
+                    UpdateAIStateTransition();
+       
+                    break;
+            }
         }
 
         void OnDamaged()
@@ -96,20 +147,49 @@ namespace Unity.FPS.AI
                     break;
                 case AIState.Follow:
                     enemyController.SetNavGetDestination(enemyController.knownDetectedTarget.transform.position);
-                    enemyController.OrientToward(enemyController.knownDetectedTarget.transform.position);
+                    enemyController.OrientToward(enemyController.knownDetectedTarget.transform.position, rotObject);
                     enemyController.OrientWeaponsToward(enemyController.knownDetectedTarget.transform.position);
                     break;
                 case AIState.Attack:
-                    enemyController.OrientToward(enemyController.knownDetectedTarget.transform.position);
+                    if (enemyType == EnemyType.Move)
+                    {
+                        // 일정 거리까지는 이동하면서 공격
+                        float distance = Vector3.Distance(
+                            enemyController.knownDetectedTarget.transform.position,
+                            enemyController.DetectionModule.detectionSourcePoint.position);
+
+                        if (distance >= (enemyController.DetectionModule.attackRange * attackSkipRatio))
+                        {
+                            enemyController.SetNavGetDestination(enemyController.knownDetectedTarget.transform.position);
+                        }
+                        else
+                        {
+                            enemyController.SetNavGetDestination(transform.position);
+                        }
+
+                    }
+                    else if (enemyType == EnemyType.Stand)
+                    {
+                        enemyController.SetNavGetDestination(transform.position);
+
+                    }
+
+                    enemyController.OrientToward(enemyController.knownDetectedTarget.transform.position, rotObject);
                     enemyController.OrientWeaponsToward(enemyController.knownDetectedTarget.transform.position);
                     enemyController.TryAttack(enemyController.knownDetectedTarget.transform.position);
+                    break;
+                case AIState.Stand:
+                    animator.SetBool("IsActive", false);
                     break;
             }
         }
 
         void OnDetected()
         {
-            aiState = AIState.Follow;    
+            if (aiState == AIState.Patrol)
+            {
+                aiState = AIState.Follow;
+            }
 
             // Vfx
             for (int i = 0; i < detectedVfx.Length; i++)
@@ -127,7 +207,19 @@ namespace Unity.FPS.AI
         }
         void OnLost()
         {
-            aiState = AIState.Patrol;
+            if (aiState == AIState.Follow || aiState == AIState.Attack)
+            {
+                if (enemyType == EnemyType.Move)
+                {
+                    aiState = AIState.Patrol;
+                }
+                else if (enemyType == EnemyType.Stand)
+                {
+                    aiState = AIState.Stand;
+                }
+
+            }
+            
             // Vfx
             for (int i = 0; i < detectedVfx.Length; i++)
             {
@@ -157,10 +249,41 @@ namespace Unity.FPS.AI
                 case AIState.Attack:
                     if (enemyController.IsTargetInAttackRange == false)
                     {
-                        aiState = AIState.Follow;
+                        if (enemyType == EnemyType.Move)
+                        {
+                            aiState = AIState.Follow;
+                        }
+                        else if (enemyType == EnemyType.Stand)
+                        {
+                            aiState = AIState.Stand;
+
+                        }
+        
+                    }
+                    break;
+                case AIState.Stand:
+                    if (enemyController.IsTargetInAttackRange && enemyController.IsSeeingTarget)
+                    {
+                        aiState = AIState.Attack;
+
+                        // 정지
+                        enemyController.SetNavGetDestination(transform.position);
                     }
                     break;
             }
+        }
+
+        void Attacked()
+        {
+            if (enemyType == EnemyType.Move)
+            {
+                animator.SetTrigger(k_Attack);
+            }
+            else if (enemyType == EnemyType.Stand)
+            {
+                animator.SetBool("IsActive", true);
+            }
+
         }
     }
 }
